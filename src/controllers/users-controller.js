@@ -1,7 +1,7 @@
 const humps = require("humps")
 const uuid = require("uuid")
 const _ = require("lodash")
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcryptjs")
 const { ValidationError } = require("../lib/errors")
 const { generateJWTforUser } = require("../lib/utils")
 const db = require("../lib/db")
