@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcryptjs")
 const faker = require("faker")
 
 const users = [
@@ -41,7 +41,10 @@ exports.getUsers = getUsers
 exports.seed = async function(knex) {
   if (process.env.NODE_ENV === "production") {
     await knex("users")
-      .whereIn("email", users.map(u => u.email || `${u.name}@demo.com`))
+      .whereIn(
+        "email",
+        users.map(u => u.email || `${u.name}@demo.com`),
+      )
       .del()
   } else {
     await knex("users").del()
