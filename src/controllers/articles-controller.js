@@ -32,7 +32,10 @@ module.exports = {
     if (tagsRelations && tagsRelations.length > 0) {
       tagList = await db("tags")
         .select()
-        .whereIn("id", tagsRelations.map(r => r.tag))
+        .whereIn(
+          "id",
+          tagsRelations.map(r => r.tag),
+        )
 
       tagList = tagList.map(t => t.name)
     }
@@ -151,10 +154,11 @@ module.exports = {
         )
       })
       .leftJoin("followers", function() {
-        this.on("articles.author", "=", "followers.user").onIn(
-          "followers.follower",
-          [user && user.id],
-        )
+        this.on(
+          "articles.author",
+          "=",
+          "followers.user",
+        ).onIn("followers.follower", [user && user.id])
       })
 
     let [articles, [countRes]] = await Promise.all([articlesQuery, countQuery])
@@ -231,7 +235,10 @@ module.exports = {
 
       tags = await db("tags")
         .select()
-        .whereIn("name", tags.map(t => t.name))
+        .whereIn(
+          "name",
+          tags.map(t => t.name),
+        )
 
       const relations = tags.map(t => ({
         id: uuid(),
@@ -347,7 +354,10 @@ module.exports = {
 
         tags = await db("tags")
           .select()
-          .whereIn("name", tags.map(t => t.name))
+          .whereIn(
+            "name",
+            tags.map(t => t.name),
+          )
 
         const relations = tags.map(t => ({
           id: uuid(),
@@ -395,7 +405,7 @@ module.exports = {
       const { user } = ctx.state
       const { offset, limit } = ctx.query
 
-      const followedQuery = db("followers")
+      const followedIds = await db("followers")
         .pluck("user")
         .where({ follower: user.id })
 
@@ -408,7 +418,7 @@ module.exports = {
             ...getSelect("tags", "tag", ["id", "name"]),
             "favorites.id as article_favorited",
           )
-          .whereIn("articles.author", followedQuery)
+          .whereIn("articles.author", followedIds)
           .limit(limit)
           .offset(offset)
           .orderBy("articles.created_at", "desc")
@@ -416,15 +426,16 @@ module.exports = {
           .leftJoin("articles_tags", "articles.id", "articles_tags.article")
           .leftJoin("tags", "articles_tags.tag", "tags.id")
           .leftJoin("favorites", function() {
-            this.on("articles.id", "=", "favorites.article").onIn(
-              "favorites.user",
-              [user && user.id],
-            )
+            this.on(
+              "articles.id",
+              "=",
+              "favorites.article",
+            ).onIn("favorites.user", [user && user.id])
           }),
 
         db("articles")
           .count()
-          .whereIn("author", followedQuery),
+          .whereIn("author", followedIds),
       ])
 
       articles = joinJs
