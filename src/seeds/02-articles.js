@@ -7,7 +7,7 @@ const { getUsers } = require("./01-users")
 
 function getArticles(users) {
   return _.flatMap(users, function(user) {
-    return Array.from({ length: 105 }, function() {
+    return Array.from({ length: 5 }, function() {
       const title = faker.lorem.sentence()
       const date = faker.date
         .between(subMonths(new Date(), 18), new Date())
@@ -34,11 +34,16 @@ exports.seed = async function(knex) {
 
   if (process.env.NODE_ENV === "production") {
     await knex("articles")
-      .whereIn("author", users.map(u => u.id))
+      .whereIn(
+        "author",
+        users.map(u => u.id),
+      )
       .del()
   } else {
     await knex("articles").del()
   }
 
-  return Promise.all(getArticles(users).map(a => knex("articles").insert(a)))
+  const articles = getArticles(users)
+
+  return knex("articles").insert(articles)
 }

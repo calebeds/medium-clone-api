@@ -14,5 +14,5 @@ const tags = [
 exports.seed = async function(knex) {
   await knex("tags").del()
 
-  return Promise.all(tags.map(a => knex("tags").insert(a)))
+  return knex("tags").insert(tags)
 }
